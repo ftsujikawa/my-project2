@@ -1,0 +1,27 @@
+{
+  "name": "passkey-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "lint": "eslint .",
+    "e2e": "playwright test",
+    "db:down": "tsx src/database.ts"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "^13.2.2",
+    "drizzle-orm": "^0.45.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.0.0",
+    "drizzle-kit": "^0.31.0",
+    "eslint": "^9.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.0.0"
+  }
+}
