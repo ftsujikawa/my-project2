@@ -68,3 +68,26 @@ it.each(['password', 'passkey'] as const)(
       .toEqual({ sign_count: 3 });
   },
 );
+
+it('rotates the session and updates the passkey counter on successful sign-in', () => {
+  db.prepare('INSERT INTO users VALUES (?, ?, ?)').run('user', 'user@example.test', 'hash');
+  const insertSession = db.prepare('INSERT INTO sessions VALUES (?, ?, ?)');
+  insertSession.run('previous', 'user', 100);
+  insertSession.run('expired', 'user', 10);
+  insertSession.run('other-active', 'user', 100);
+  db.prepare('INSERT INTO passkeys VALUES (?, ?, ?, ?)').run('user', 'credential', Buffer.from([1]), 3);
+
+  expect(createSession(db, 'previous', 'new', 'user', 10, 60, {
+    credentialId: 'credential',
+    previousCount: 3,
+    newCount: 4,
+  })).toBe(true);
+
+  expect(db.prepare('SELECT token, user_id, expires_at FROM sessions ORDER BY token').all())
+    .toEqual([
+      { token: 'new', user_id: 'user', expires_at: 70 },
+      { token: 'other-active', user_id: 'user', expires_at: 100 },
+    ]);
+  expect(db.prepare('SELECT sign_count FROM passkeys WHERE credential_id = ?').get('credential'))
+    .toEqual({ sign_count: 4 });
+});
